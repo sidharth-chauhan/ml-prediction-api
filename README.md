@@ -1,8 +1,8 @@
-<h1 align="center">🚴 Bike Demand Prediction & ML Classification API</h1>
+<h1 align="center">🚴 Bike Demand Prediction & Breast Cancer Classification API</h1>
 
 <p align="center">
   <strong>Regression · Classification · FastAPI · Scikit-learn</strong><br/>
-  Two machine learning applications served through a single REST API.
+  Two trained machine learning models served through a single REST API.
 </p>
 
 <p align="center">
@@ -16,65 +16,251 @@
 
 ---
 
-## Table of Contents
+## Results at a Glance
 
-- [Overview](#overview)
-- [Key Features](#key-features)
-- [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
-- [Project Structure](#project-structure)
-- [Machine Learning Models](#machine-learning-models)
-- [Installation and Setup](#installation-and-setup)
-- [API Documentation](#api-documentation)
-- [Bike Demand Prediction](#bike-demand-prediction)
-- [Breast Cancer Classification](#breast-cancer-classification)
-- [Machine Learning Workflow](#machine-learning-workflow)
-- [Model Evaluation](#model-evaluation)
-- [API Endpoints](#api-endpoints)
-- [Future Improvements](#future-improvements)
+| Task | Selected Model | Key Metrics |
+|---|---|---|
+| 🚴 Bike demand (regression) | Random Forest Regressor | **R² 0.9448** · MAE 24.77 · RMSE 41.79 |
+| 🧬 Breast cancer (classification) | Logistic Regression | **98.25% test accuracy** · weighted F1 0.99 |
+
+Full comparisons are in [Model Evaluation](#model-evaluation).
 
 ---
 
-## Overview
+## Quick Start
 
-This project develops and deploys machine learning models through a RESTful API built with **FastAPI** and **Scikit-learn**.
+**1. Clone the repository**
 
-It combines two applications in one service:
+Git LFS is required so the `.pkl` model files download correctly.
 
-- 🚴 **Bike Demand Prediction** – a regression model that predicts bike rental demand from environmental, seasonal, and time-related features.
-- 🧬 **Breast Cancer Classification** – a binary classifier that labels a tumor as malignant or benign from cell-nuclei measurements.
+```bash
+git lfs install
+git clone https://github.com/sidharth-chauhan/ml-prediction-api.git
+cd ml-prediction-api
+git lfs pull
+```
 
-Both trained models are serialized with Joblib and loaded by the API to generate predictions over HTTP.
+**2. Create and activate a virtual environment**
 
----
+```bash
+python3 -m venv venv
+source venv/bin/activate        # Windows: venv\Scripts\activate
+```
 
-## Key Features
+**3. Install dependencies and run**
 
-- **Two ML applications** – regression and classification in one API
-- **Random Forest Regression** – predicts bike rental demand
-- **Logistic Regression** – classifies breast tumor measurements
-- **Data preprocessing** – `StandardScaler` standardizes classification inputs
-- **Model persistence** – trained models saved and loaded with Joblib
-- **Git LFS integration** – handles large model files
-- **Input validation** – Pydantic validates every request
-- **Interactive documentation** – Swagger UI and OpenAPI docs generated automatically
-- **Modular inference** – each model has its own endpoint
+```bash
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
 
----
+**4. Open the API**
 
-## Tech Stack
-
-| Technology | Purpose |
+| Page | URL |
 |---|---|
-| Python | Core programming language |
-| FastAPI | REST API development |
-| Scikit-learn | Machine learning algorithms |
-| Pandas | Data manipulation and preprocessing |
-| NumPy | Numerical computing |
-| Joblib | Model serialization and loading |
-| Pydantic | Request validation |
-| Uvicorn | ASGI server |
-| Git LFS | Large model file storage |
+| Swagger UI (try requests in the browser) | http://127.0.0.1:8000/docs |
+| ReDoc | http://127.0.0.1:8000/redoc |
+| Root | http://127.0.0.1:8000/ |
+
+---
+
+## API Reference
+
+| Method | Endpoint | Description |
+|---|---|---|
+| `GET` | `/` | Welcome message |
+| `POST` | `/predict` | Predict bike rental demand |
+| `POST` | `/predict_classification` | Classify a tumor as malignant or benign |
+
+### `POST /predict` : Bike Demand
+
+**Request body**
+
+```json
+{
+  "season": 2,
+  "yr": 1,
+  "mnth": 6,
+  "hr": 17,
+  "holiday": 0,
+  "weekday": 3,
+  "workingday": 1,
+  "weathersit": 1,
+  "temp": 0.65,
+  "atemp": 0.62,
+  "hum": 0.45,
+  "windspeed": 0.15
+}
+```
+
+**cURL**
+
+```bash
+curl -X POST http://127.0.0.1:8000/predict \
+  -H "Content-Type: application/json" \
+  -d '{"season":2,"yr":1,"mnth":6,"hr":17,"holiday":0,"weekday":3,"workingday":1,"weathersit":1,"temp":0.65,"atemp":0.62,"hum":0.45,"windspeed":0.15}'
+```
+
+**Response**
+
+```json
+{
+  "prediction": 245.0
+}
+```
+
+### `POST /predict_classification` : Breast Cancer
+
+**Request body**
+
+```json
+{
+  "mean_radius": 14.5,
+  "mean_texture": 20.0,
+  "mean_perimeter": 95.0,
+  "mean_area": 650.0,
+  "mean_smoothness": 0.1,
+  "mean_compactness": 0.12,
+  "mean_concavity": 0.1,
+  "mean_concave_points": 0.05,
+  "mean_symmetry": 0.19,
+  "mean_fractal_dimension": 0.06,
+  "radius_error": 0.3,
+  "texture_error": 1.0,
+  "perimeter_error": 2.0,
+  "area_error": 25.0,
+  "smoothness_error": 0.006,
+  "compactness_error": 0.02,
+  "concavity_error": 0.02,
+  "concave_points_error": 0.01,
+  "symmetry_error": 0.02,
+  "fractal_dimension_error": 0.003,
+  "worst_radius": 17.0,
+  "worst_texture": 25.0,
+  "worst_perimeter": 115.0,
+  "worst_area": 900.0,
+  "worst_smoothness": 0.14,
+  "worst_compactness": 0.25,
+  "worst_concavity": 0.25,
+  "worst_concave_points": 0.1,
+  "worst_symmetry": 0.3,
+  "worst_fractal_dimension": 0.08
+}
+```
+
+**Response**
+
+```json
+{
+  "prediction": "Benign",
+  "raw_prediction": 1
+}
+```
+
+| `raw_prediction` | Meaning |
+|---|---|
+| `0` | Malignant |
+| `1` | Benign |
+
+> Example responses are illustrative. Actual output depends on the trained model and the values you send.
+
+---
+
+## How Your Inputs Drive the Prediction
+
+You choose the input values, and the model predicts from exactly those values. Change an input and the prediction changes.
+
+### Bike demand: what you choose
+
+| Field | What you choose | Values |
+|---|---|---|
+| `season` | Season | 1 = spring, 2 = summer, 3 = fall, 4 = winter |
+| `yr` | Year | 0 = 2011, 1 = 2012 |
+| `mnth` | Month | 1 to 12 |
+| `hr` | Hour of the day | 0 to 23 |
+| `holiday` | Holiday | 0 = no, 1 = yes |
+| `weekday` | Day of the week | 0 to 6 |
+| `workingday` | Working day | 0 = no, 1 = yes |
+| `weathersit` | Weather | 1 = clear, 2 = mist or cloudy, 3 = light rain or snow, 4 = heavy rain or snow |
+| `temp` | Temperature | Normalized, 0 to 1 |
+| `atemp` | Feeling temperature | Normalized, 0 to 1 |
+| `hum` | Humidity | Normalized, 0 to 1 |
+| `windspeed` | Wind speed | Normalized, 0 to 1 |
+
+Value meanings follow the UCI Bike Sharing dataset documentation in `bike+sharing+dataset/Readme.txt`.
+
+### Breast cancer: what you choose
+
+You provide 30 measurements of cell nuclei, computed from digitized images of fine needle aspirates (FNA) of breast masses. Each of the 10 characteristics is given in three forms: the **mean**, the **standard error** and the **worst** (largest) value.
+
+| # | Characteristic | Mean | Error | Worst |
+|---|---|---|---|---|
+| 1 | Radius | `mean_radius` | `radius_error` | `worst_radius` |
+| 2 | Texture | `mean_texture` | `texture_error` | `worst_texture` |
+| 3 | Perimeter | `mean_perimeter` | `perimeter_error` | `worst_perimeter` |
+| 4 | Area | `mean_area` | `area_error` | `worst_area` |
+| 5 | Smoothness | `mean_smoothness` | `smoothness_error` | `worst_smoothness` |
+| 6 | Compactness | `mean_compactness` | `compactness_error` | `worst_compactness` |
+| 7 | Concavity | `mean_concavity` | `concavity_error` | `worst_concavity` |
+| 8 | Concave points | `mean_concave_points` | `concave_points_error` | `worst_concave_points` |
+| 9 | Symmetry | `mean_symmetry` | `symmetry_error` | `worst_symmetry` |
+| 10 | Fractal dimension | `mean_fractal_dimension` | `fractal_dimension_error` | `worst_fractal_dimension` |
+
+**Preprocessing:** the values are standardized with the fitted `StandardScaler` saved during training, so inputs are transformed exactly as the training data was.
+
+```text
+z = (x - mean) / std
+```
+
+> This API is a machine learning demonstration and not a medical diagnostic tool.
+
+---
+
+## Model Evaluation
+
+### Bike Demand Prediction (Regression)
+
+| Metric | Result |
+|---|---|
+| MAE | 24.77 |
+| RMSE | 41.79 |
+| R² Score | 0.9448 |
+
+### Breast Cancer Classification
+
+| Algorithm | Training Accuracy | Testing Accuracy |
+|---|---|---|
+| **Logistic Regression** | 98.90% | **98.25%** |
+| **SVM** | 98.24% | **98.25%** |
+| Random Forest | 100% | 95.61% |
+| KNN | 97.36% | 95.61% |
+| Gaussian Naive Bayes | 94.07% | 93.86% |
+| Decision Tree | 100% | 91.23% |
+
+**Logistic Regression and SVM: detailed metrics**
+
+| Class | Precision | Recall | F1-score |
+|---|---|---|---|
+| Malignant | 0.98 | 0.98 | 0.98 |
+| Benign | 0.99 | 0.99 | 0.99 |
+| **Overall (weighted)** | | | **0.99** |
+
+**Conclusion:** Logistic Regression and SVM achieved the highest test accuracy (98.25%). Logistic Regression was selected as the final model.
+
+---
+
+## Model Selection
+
+| Task | Algorithms Explored | Selected Model |
+|---|---|---|
+| Bike demand | Linear Regression, Decision Tree, Random Forest | **Random Forest Regressor** |
+| Breast cancer | Logistic Regression, SVM, Random Forest, KNN, Gaussian Naive Bayes, Decision Tree | **Logistic Regression** |
+
+**Why Random Forest for bike demand?**
+It is an ensemble of decision trees that averages their predictions. It captures nonlinear relationships and feature interactions (for example hour × working day × weather) and works well on tabular data.
+
+**Why Logistic Regression for cancer classification?**
+It matched the best test accuracy of all six algorithms with a small gap between training and testing scores (98.90% vs 98.25%). By contrast, Random Forest and Decision Tree reached 100% training accuracy but dropped on the test set, a sign of overfitting. Logistic Regression is also interpretable and works well on standardized features.
 
 ---
 
@@ -112,25 +298,35 @@ Both trained models are serialized with Joblib and loaded by the API to generate
 
 ---
 
+## Machine Learning Workflow
+
+```text
+Data Collection → Exploratory Data Analysis → Preprocessing → Feature Preparation
+      → Train-Test Split → Model Training → Evaluation → Model Selection
+      → Serialization (Joblib) → FastAPI Deployment → Inference
+```
+
+---
+
 ## Project Structure
 
 ```text
 ml-prediction-api/
 │
-├── main.py
-├── predict.py
+├── main.py                     # FastAPI app and endpoints
+├── predict.py                  # Prediction logic
 │
-├── random_forest_model.pkl
-├── logistic_regression.pkl
-├── scaler.pkl
+├── random_forest_model.pkl     # Bike demand model      (Git LFS)
+├── logistic_regression.pkl     # Cancer classifier      (Git LFS)
+├── scaler.pkl                  # Fitted StandardScaler  (Git LFS)
 │
 ├── bike+sharing+dataset/
 │   ├── Readme.txt
 │   ├── day.csv
 │   └── hour.csv
 │
-├── notebook_classification/
-├── notebook_regression/
+├── notebook_regression/        # Regression experiments
+├── notebook_classification/    # Classification experiments
 │
 ├── requirements.txt
 ├── .gitattributes
@@ -138,364 +334,21 @@ ml-prediction-api/
 └── README.md
 ```
 
-### Model Artifacts
+---
 
-| File | Description |
+## Tech Stack
+
+| Technology | Purpose |
 |---|---|
-| `random_forest_model.pkl` | Trained Random Forest Regressor |
-| `logistic_regression.pkl` | Trained Logistic Regression Classifier |
-| `scaler.pkl` | Fitted StandardScaler used for classification |
-
-> Model files are stored with Git Large File Storage (Git LFS).
-
----
-
-## Machine Learning Models
-
-Multiple algorithms were explored in the notebooks before one model per task was selected for deployment.
-
-### 1. Bike Demand Prediction (Regression)
-
-**Algorithms explored:** Linear Regression, Decision Tree Regressor, Random Forest Regressor
-
-**Selected model: Random Forest Regressor**
-
-Random Forest is an ensemble method that trains many decision trees on different samples of the data, uses random feature subsets when building each tree, and averages their predictions.
-
-**Why Random Forest?**
-
-- Captures nonlinear relationships between features
-- Handles complex feature interactions
-- Reduces overfitting compared with a single decision tree in many settings
-- Works well on structured, tabular data
-
-Saved as `random_forest_model.pkl`.
-
-### 2. Breast Cancer Classification (Binary Classification)
-
-**Algorithms explored:** Logistic Regression, Decision Tree, Gaussian Naive Bayes, K-Nearest Neighbors (KNN), Random Forest, Support Vector Machine (SVM)
-
-**Selected model: Logistic Regression**
-
-Logistic Regression estimates the probability that an input belongs to a class using the logistic (sigmoid) function.
-
-**Why Logistic Regression?**
-
-- Well suited to binary classification
-- Produces probability-based predictions
-- Relatively easy to interpret
-- Works well with standardized numerical features
-- Provides a strong, simple baseline
-
-Saved as `logistic_regression.pkl`, with the fitted scaler saved as `scaler.pkl`.
-
-### Model Selection Summary
-
-| Application | Algorithms Explored | Selected Model |
-|---|---|---|
-| Bike Demand Prediction | Linear Regression, Decision Tree, Random Forest | **Random Forest Regressor** |
-| Breast Cancer Classification | Logistic Regression, Decision Tree, Naive Bayes, KNN, Random Forest, SVM | **Logistic Regression** |
+| Python | Core language |
+| FastAPI | REST API framework |
+| Scikit-learn | ML algorithms and preprocessing |
+| Pandas / NumPy | Data manipulation and numerical computing |
+| Joblib | Model serialization and loading |
+| Pydantic | Request validation |
+| Uvicorn | ASGI server |
+| Git LFS | Large model file storage |
 
 ---
 
-## Installation and Setup
-
-### 1. Clone the Repository
-
-Install [Git LFS](https://git-lfs.com/) first so the `.pkl` model files download correctly.
-
-```bash
-git lfs install
-git clone https://github.com/sidharth-chauhan/ml-prediction-api.git
-cd ml-prediction-api
-git lfs pull
-```
-
-### 2. Create a Virtual Environment
-
-```bash
-python3 -m venv venv
-```
-
-### 3. Activate the Environment
-
-**macOS / Linux**
-
-```bash
-source venv/bin/activate
-```
-
-**Windows**
-
-```bash
-venv\Scripts\activate
-```
-
-### 4. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-```
-
-### 5. Start the FastAPI Server
-
-```bash
-uvicorn main:app --reload
-```
-
-The application runs at `http://127.0.0.1:8000`.
-
----
-
-## API Documentation
-
-FastAPI generates interactive documentation automatically.
-
-| Documentation | URL |
-|---|---|
-| Swagger UI | http://127.0.0.1:8000/docs |
-| ReDoc | http://127.0.0.1:8000/redoc |
-| Root Endpoint | http://127.0.0.1:8000/ |
-
----
-
-## Bike Demand Prediction
-
-**Endpoint:** `POST /predict`
-**Algorithm:** Random Forest Regressor
-**Problem Type:** Regression
-
-Predicts bike rental demand from seasonal, environmental, and time-related features.
-
-### Input Features
-
-| Feature | Description |
-|---|---|
-| `season` | Season of the year |
-| `yr` | Year indicator |
-| `mnth` | Month |
-| `hr` | Hour of the day |
-| `holiday` | Whether the day is a holiday |
-| `weekday` | Day of the week |
-| `workingday` | Whether the day is a working day |
-| `weathersit` | Weather situation |
-| `temp` | Normalized temperature |
-| `atemp` | Normalized feeling temperature |
-| `hum` | Normalized humidity |
-| `windspeed` | Normalized wind speed |
-
-### Example Request
-
-```json
-{
-  "season": 2,
-  "yr": 1,
-  "mnth": 6,
-  "hr": 17,
-  "holiday": 0,
-  "weekday": 3,
-  "workingday": 1,
-  "weathersit": 1,
-  "temp": 0.65,
-  "atemp": 0.62,
-  "hum": 0.45,
-  "windspeed": 0.15
-}
-```
-
-### Example Response
-
-```json
-{
-  "prediction": 245.0
-}
-```
-
-> The prediction above is illustrative. Actual output depends on the trained model and input.
-
----
-
-## Breast Cancer Classification
-
-**Endpoint:** `POST /predict_classification`
-**Algorithm:** Logistic Regression
-**Problem Type:** Binary Classification
-
-Uses 30 numerical features describing cell nuclei, computed from digitized images of fine needle aspirates (FNA) of breast masses.
-
-### Prediction Classes
-
-| Output | Meaning |
-|---|---|
-| `0` | Malignant |
-| `1` | Benign |
-
-### Preprocessing (StandardScaler)
-
-Input features are standardized before prediction using this formula:
-
-```text
-z = (x - mean) / std
-```
-
-- `x` = original feature value
-- `mean` = mean from the training data
-- `std` = standard deviation from the training data
-- `z` = standardized feature value
-
-The same fitted scaler used during training is loaded at inference time, so prediction inputs are transformed consistently with the training data.
-
-### Input Features
-
-The API expects these 30 features:
-
-| # | Mean | Error | Worst |
-|---|---|---|---|
-| 1 | `mean_radius` | `radius_error` | `worst_radius` |
-| 2 | `mean_texture` | `texture_error` | `worst_texture` |
-| 3 | `mean_perimeter` | `perimeter_error` | `worst_perimeter` |
-| 4 | `mean_area` | `area_error` | `worst_area` |
-| 5 | `mean_smoothness` | `smoothness_error` | `worst_smoothness` |
-| 6 | `mean_compactness` | `compactness_error` | `worst_compactness` |
-| 7 | `mean_concavity` | `concavity_error` | `worst_concavity` |
-| 8 | `mean_concave_points` | `concave_points_error` | `worst_concave_points` |
-| 9 | `mean_symmetry` | `symmetry_error` | `worst_symmetry` |
-| 10 | `mean_fractal_dimension` | `fractal_dimension_error` | `worst_fractal_dimension` |
-
-### Example Request
-
-```json
-{
-  "mean_radius": 14.5,
-  "mean_texture": 20.0,
-  "mean_perimeter": 95.0,
-  "mean_area": 650.0,
-  "mean_smoothness": 0.1,
-  "mean_compactness": 0.12,
-  "mean_concavity": 0.1,
-  "mean_concave_points": 0.05,
-  "mean_symmetry": 0.19,
-  "mean_fractal_dimension": 0.06,
-  "radius_error": 0.3,
-  "texture_error": 1.0,
-  "perimeter_error": 2.0,
-  "area_error": 25.0,
-  "smoothness_error": 0.006,
-  "compactness_error": 0.02,
-  "concavity_error": 0.02,
-  "concave_points_error": 0.01,
-  "symmetry_error": 0.02,
-  "fractal_dimension_error": 0.003,
-  "worst_radius": 17.0,
-  "worst_texture": 25.0,
-  "worst_perimeter": 115.0,
-  "worst_area": 900.0,
-  "worst_smoothness": 0.14,
-  "worst_compactness": 0.25,
-  "worst_concavity": 0.25,
-  "worst_concave_points": 0.1,
-  "worst_symmetry": 0.3,
-  "worst_fractal_dimension": 0.08
-}
-```
-
-### Example Response
-
-```json
-{
-  "prediction": "Benign",
-  "raw_prediction": 1
-}
-```
-
-> The prediction above is illustrative. Actual output depends on the trained model and input.
-
----
-
-## Machine Learning Workflow
-
-```text
-Data Collection
-      |
-      v
-Exploratory Data Analysis
-      |
-      v
-Data Preprocessing
-      |
-      v
-Feature Preparation
-      |
-      v
-Train-Test Split
-      |
-      v
-Model Training
-      |
-      v
-Model Evaluation
-      |
-      v
-Model Selection
-      |
-      v
-Model Serialization
-      |
-      v
-FastAPI Deployment
-      |
-      v
-Prediction / Inference
-```
-
----
-
-## Model Evaluation
-
-Different metrics are used for regression and classification.
-
-### Regression Metrics
-
-| Metric | Purpose |
-|---|---|
-| MAE | Average absolute prediction error |
-| MSE | Average squared prediction error |
-| RMSE | Prediction error in the target's original scale |
-| R² Score | Proportion of variance explained by the model |
-
-### Classification Metrics
-
-| Metric | Purpose |
-|---|---|
-| Accuracy | Overall share of correct predictions |
-| Precision | Share of positive predictions that are correct |
-| Recall | Share of actual positives that are identified |
-| F1-Score | Harmonic mean of precision and recall |
-| Confusion Matrix | Correct and incorrect predictions per class |
-
----
-
-## API Endpoints
-
-| Method | Endpoint | Description |
-|---|---|---|
-| `GET` | `/` | Welcome endpoint |
-| `POST` | `/predict` | Predict bike rental demand |
-| `POST` | `/predict_classification` | Classify tumor measurements |
-
-### Quick Test
-
-1. Start the FastAPI server.
-2. Open `http://127.0.0.1:8000/docs`.
-3. Select the endpoint you want to test.
-4. Click **Try it out**.
-5. Enter the required JSON input.
-6. Click **Execute** to receive the prediction.
-
-You can also test with Postman or any HTTP client.
-
----
-
-<p align="center">
-  <strong>Built with ❤️ using Python, Scikit-learn and FastAPI</strong>
-</p>
+**Sidharth Chauhan**
