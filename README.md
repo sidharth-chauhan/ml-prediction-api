@@ -2,7 +2,7 @@
 
 <p align="center">
   <strong>Regression · Classification · FastAPI · Scikit-learn</strong><br/>
-  Two trained ML models served through one REST API.
+  Two machine learning applications served through a single REST API.
 </p>
 
 <p align="center">
@@ -11,78 +11,108 @@
   <img src="https://img.shields.io/badge/Scikit--learn-F7931E?style=for-the-badge&logo=scikitlearn&logoColor=white" />
   <img src="https://img.shields.io/badge/Pandas-150458?style=for-the-badge&logo=pandas&logoColor=white" />
   <img src="https://img.shields.io/badge/NumPy-013243?style=for-the-badge&logo=numpy&logoColor=white" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" />
+  <img src="https://img.shields.io/badge/Git_LFS-Storage-orange?style=for-the-badge&logo=git&logoColor=white" />
 </p>
 
 ---
 
-## 📑 Table of Contents
+## Table of Contents
 
-- [Overview](#-overview)
-- [Key Features](#-key-features)
-- [Tech Stack](#️-tech-stack)
-- [Architecture](#️-architecture)
-- [Project Structure](#-project-structure)
-- [Installation & Setup](#️-installation--setup)
-- [API Documentation](#-api-documentation)
-- [Bike Demand Prediction](#-1-bike-demand-prediction)
-- [Breast Cancer Classification](#-2-breast-cancer-classification)
-- [Machine Learning Workflow](#-machine-learning-workflow)
-- [Model Evaluation](#-model-evaluation)
-- [API Endpoints Summary](#-api-endpoints-summary)
-- [Future Improvements](#-future-improvements)
-- [License](#-license)
+- [Overview](#overview)
+- [Key Features](#key-features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Project Structure](#project-structure)
+- [Machine Learning Models](#machine-learning-models)
+- [Installation and Setup](#installation-and-setup)
+- [API Documentation](#api-documentation)
+- [Bike Demand Prediction](#bike-demand-prediction)
+- [Breast Cancer Classification](#breast-cancer-classification)
+- [Machine Learning Workflow](#machine-learning-workflow)
+- [Model Evaluation](#model-evaluation)
+- [API Endpoints](#api-endpoints)
+- [Future Improvements](#future-improvements)
 
 ---
 
-## 📌 Overview
+## Overview
 
-This project develops and deploys machine learning models behind a RESTful API built with **FastAPI**. It combines two applications in a single service:
+This project develops and deploys machine learning models through a RESTful API built with **FastAPI** and **Scikit-learn**.
+
+It combines two applications in one service:
 
 - 🚴 **Bike Demand Prediction** – a regression model that predicts bike rental demand from environmental, seasonal, and time-related features.
-- 🧬 **Breast Cancer Classification** – a classification model that predicts whether a breast tumor is malignant or benign from cell-nuclei measurements.
+- 🧬 **Breast Cancer Classification** – a binary classifier that labels a tumor as malignant or benign from cell-nuclei measurements.
 
-Both trained models are serialized with Joblib and loaded by the API to serve predictions over HTTP.
+Both trained models are serialized with Joblib and loaded by the API to generate predictions over HTTP.
 
-## ✨ Key Features
+---
+
+## Key Features
 
 - **Two ML applications** – regression and classification in one API
 - **Random Forest Regression** – predicts bike rental demand
 - **Logistic Regression** – classifies breast tumor measurements
-- **Data preprocessing** – `StandardScaler` normalizes classification inputs
-- **Model persistence** – models saved and loaded with Joblib, tracked via Git LFS
-- **Input validation** – Pydantic models validate every request
-- **Interactive docs** – Swagger UI and OpenAPI documentation generated automatically
+- **Data preprocessing** – `StandardScaler` standardizes classification inputs
+- **Model persistence** – trained models saved and loaded with Joblib
+- **Git LFS integration** – handles large model files
+- **Input validation** – Pydantic validates every request
+- **Interactive documentation** – Swagger UI and OpenAPI docs generated automatically
 - **Modular inference** – each model has its own endpoint
 
-## 🛠️ Tech Stack
+---
+
+## Tech Stack
 
 | Technology | Purpose |
 |---|---|
 | Python | Core programming language |
 | FastAPI | REST API development |
 | Scikit-learn | Machine learning algorithms |
-| Pandas | Data manipulation |
+| Pandas | Data manipulation and preprocessing |
 | NumPy | Numerical computing |
 | Joblib | Model serialization and loading |
 | Pydantic | Request validation |
 | Uvicorn | ASGI server |
+| Git LFS | Large model file storage |
 
-## 🏗️ Architecture
+---
 
-```mermaid
-flowchart TD
-    A["Client<br/>Postman / Browser / cURL"] --> B["FastAPI<br/>Request Validation"]
-    B --> C["POST /predict<br/>Bike Demand"]
-    B --> D["POST /predict_classification<br/>Breast Cancer"]
-    C --> E["Random Forest Regressor"]
-    D --> F["StandardScaler"]
-    F --> G["Logistic Regression"]
-    E --> H["JSON Response"]
-    G --> H
+## Architecture
+
+```text
+                 +--------------------------+
+                 |          Client          |
+                 |  Postman / Browser / cURL|
+                 +------------+-------------+
+                              |
+                              v
+                 +--------------------------+
+                 |         FastAPI          |
+                 |    Request Validation    |
+                 +------+-------------+-----+
+                        |             |
+          POST /predict |             | POST /predict_classification
+                        v             v
+          +------------------+   +--------------------+
+          | Random Forest    |   |   StandardScaler   |
+          | Regressor        |   +---------+----------+
+          +--------+---------+             |
+                   |                       v
+                   |             +--------------------+
+                   |             | Logistic Regression|
+                   |             +---------+----------+
+                   |                       |
+                   +-----------+-----------+
+                               v
+                 +--------------------------+
+                 |      JSON Response       |
+                 +--------------------------+
 ```
 
-## 📂 Project Structure
+---
+
+## Project Structure
 
 ```text
 ml-prediction-api/
@@ -108,7 +138,7 @@ ml-prediction-api/
 └── README.md
 ```
 
-**Model artifacts (stored via Git LFS):**
+### Model Artifacts
 
 | File | Description |
 |---|---|
@@ -116,11 +146,63 @@ ml-prediction-api/
 | `logistic_regression.pkl` | Trained Logistic Regression Classifier |
 | `scaler.pkl` | Fitted StandardScaler used for classification |
 
-## ⚙️ Installation & Setup
+> Model files are stored with Git Large File Storage (Git LFS).
 
-### 1. Clone the Repository (with Git LFS)
+---
 
-Make sure [Git LFS](https://git-lfs.com/) is installed so the `.pkl` model files download properly:
+## Machine Learning Models
+
+Multiple algorithms were explored in the notebooks before one model per task was selected for deployment.
+
+### 1. Bike Demand Prediction (Regression)
+
+**Algorithms explored:** Linear Regression, Decision Tree Regressor, Random Forest Regressor
+
+**Selected model: Random Forest Regressor**
+
+Random Forest is an ensemble method that trains many decision trees on different samples of the data, uses random feature subsets when building each tree, and averages their predictions.
+
+**Why Random Forest?**
+
+- Captures nonlinear relationships between features
+- Handles complex feature interactions
+- Reduces overfitting compared with a single decision tree in many settings
+- Works well on structured, tabular data
+
+Saved as `random_forest_model.pkl`.
+
+### 2. Breast Cancer Classification (Binary Classification)
+
+**Algorithms explored:** Logistic Regression, Decision Tree, Gaussian Naive Bayes, K-Nearest Neighbors (KNN), Random Forest, Support Vector Machine (SVM)
+
+**Selected model: Logistic Regression**
+
+Logistic Regression estimates the probability that an input belongs to a class using the logistic (sigmoid) function.
+
+**Why Logistic Regression?**
+
+- Well suited to binary classification
+- Produces probability-based predictions
+- Relatively easy to interpret
+- Works well with standardized numerical features
+- Provides a strong, simple baseline
+
+Saved as `logistic_regression.pkl`, with the fitted scaler saved as `scaler.pkl`.
+
+### Model Selection Summary
+
+| Application | Algorithms Explored | Selected Model |
+|---|---|---|
+| Bike Demand Prediction | Linear Regression, Decision Tree, Random Forest | **Random Forest Regressor** |
+| Breast Cancer Classification | Logistic Regression, Decision Tree, Naive Bayes, KNN, Random Forest, SVM | **Logistic Regression** |
+
+---
+
+## Installation and Setup
+
+### 1. Clone the Repository
+
+Install [Git LFS](https://git-lfs.com/) first so the `.pkl` model files download correctly.
 
 ```bash
 git lfs install
@@ -161,9 +243,11 @@ pip install -r requirements.txt
 uvicorn main:app --reload
 ```
 
-The application will run at `http://127.0.0.1:8000`.
+The application runs at `http://127.0.0.1:8000`.
 
-## 📖 API Documentation
+---
+
+## API Documentation
 
 FastAPI generates interactive documentation automatically.
 
@@ -173,11 +257,15 @@ FastAPI generates interactive documentation automatically.
 | ReDoc | http://127.0.0.1:8000/redoc |
 | Root Endpoint | http://127.0.0.1:8000/ |
 
-## 🚴 1. Bike Demand Prediction
+---
+
+## Bike Demand Prediction
 
 **Endpoint:** `POST /predict`
 **Algorithm:** Random Forest Regressor
 **Problem Type:** Regression
+
+Predicts bike rental demand from seasonal, environmental, and time-related features.
 
 ### Input Features
 
@@ -223,15 +311,17 @@ FastAPI generates interactive documentation automatically.
 }
 ```
 
-> The prediction above is illustrative; actual output depends on the trained model and input.
+> The prediction above is illustrative. Actual output depends on the trained model and input.
 
-## 🧬 2. Breast Cancer Classification
+---
+
+## Breast Cancer Classification
 
 **Endpoint:** `POST /predict_classification`
 **Algorithm:** Logistic Regression
 **Problem Type:** Binary Classification
 
-The model uses 30 numerical features describing cell nuclei, computed from digitized images of fine needle aspirates (FNA) of breast masses.
+Uses 30 numerical features describing cell nuclei, computed from digitized images of fine needle aspirates (FNA) of breast masses.
 
 ### Prediction Classes
 
@@ -240,19 +330,20 @@ The model uses 30 numerical features describing cell nuclei, computed from digit
 | `0` | Malignant |
 | `1` | Benign |
 
-### Preprocessing
+### Preprocessing (StandardScaler)
 
-Inputs are standardized with **StandardScaler** before prediction:
+Input features are standardized before prediction using this formula:
 
-$$z = \frac{x - \mu}{\sigma}$$
+```text
+z = (x - mean) / std
+```
 
-Where:
+- `x` = original feature value
+- `mean` = mean from the training data
+- `std` = standard deviation from the training data
+- `z` = standardized feature value
 
-- $x$ = original feature value
-- $\mu$ = training mean
-- $\sigma$ = training standard deviation
-
-The same fitted scaler used during training is loaded at inference time.
+The same fitted scaler used during training is loaded at inference time, so prediction inputs are transformed consistently with the training data.
 
 ### Input Features
 
@@ -317,64 +408,94 @@ The API expects these 30 features:
 }
 ```
 
-> The prediction above is illustrative; actual output depends on the trained model and input.
+> The prediction above is illustrative. Actual output depends on the trained model and input.
 
-## 🧠 Machine Learning Workflow
+---
 
-```mermaid
-flowchart TD
-    A[Data Collection] --> B[Exploratory Data Analysis]
-    B --> C[Data Preprocessing]
-    C --> D[Feature Selection & Preparation]
-    D --> E[Train-Test Split]
-    E --> F[Model Training]
-    F --> G[Model Evaluation]
-    G --> H[Hyperparameter Tuning]
-    H --> I[Model Serialization]
-    I --> J[FastAPI Deployment]
-    J --> K[Real-Time Inference]
+## Machine Learning Workflow
+
+```text
+Data Collection
+      |
+      v
+Exploratory Data Analysis
+      |
+      v
+Data Preprocessing
+      |
+      v
+Feature Preparation
+      |
+      v
+Train-Test Split
+      |
+      v
+Model Training
+      |
+      v
+Model Evaluation
+      |
+      v
+Model Selection
+      |
+      v
+Model Serialization
+      |
+      v
+FastAPI Deployment
+      |
+      v
+Prediction / Inference
 ```
 
-## 📊 Model Evaluation
+---
 
-| Problem Type | Metrics |
+## Model Evaluation
+
+Different metrics are used for regression and classification.
+
+### Regression Metrics
+
+| Metric | Purpose |
 |---|---|
-| Regression | MAE, MSE, RMSE, R² Score |
-| Classification | Accuracy, Precision, Recall, F1-Score, Confusion Matrix |
+| MAE | Average absolute prediction error |
+| MSE | Average squared prediction error |
+| RMSE | Prediction error in the target's original scale |
+| R² Score | Proportion of variance explained by the model |
 
-## 🔌 API Endpoints Summary
+### Classification Metrics
+
+| Metric | Purpose |
+|---|---|
+| Accuracy | Overall share of correct predictions |
+| Precision | Share of positive predictions that are correct |
+| Recall | Share of actual positives that are identified |
+| F1-Score | Harmonic mean of precision and recall |
+| Confusion Matrix | Correct and incorrect predictions per class |
+
+---
+
+## API Endpoints
 
 | Method | Endpoint | Description |
 |---|---|---|
 | `GET` | `/` | Welcome endpoint |
 | `POST` | `/predict` | Predict bike rental demand |
-| `POST` | `/predict_classification` | Classify breast tumor measurements |
+| `POST` | `/predict_classification` | Classify tumor measurements |
 
 ### Quick Test
 
-1. Open Swagger UI at `/docs`.
-2. Select a prediction endpoint.
-3. Click **Try it out**.
-4. Enter the JSON input.
-5. Click **Execute** and view the response.
+1. Start the FastAPI server.
+2. Open `http://127.0.0.1:8000/docs`.
+3. Select the endpoint you want to test.
+4. Click **Try it out**.
+5. Enter the required JSON input.
+6. Click **Execute** to receive the prediction.
 
 You can also test with Postman or any HTTP client.
 
-## 🔮 Future Improvements
-
-- [ ] Add model comparison and experiment tracking
-- [ ] Improve performance through additional feature engineering
-- [ ] Add automated model evaluation
-- [ ] Introduce Docker-based deployment
-- [ ] Deploy the API to a cloud platform
-- [ ] Add automated testing with Pytest
-- [ ] Implement CI/CD workflows
-- [ ] Add structured logging and API monitoring
-
-## 📄 License
-
-This project is available under the **MIT License**.
-
 ---
 
-<p align="center">Made with ❤️ using FastAPI and Scikit-learn</p>
+<p align="center">
+  <strong>Built with ❤️ using Python, Scikit-learn and FastAPI</strong>
+</p>
